@@ -1,9 +1,13 @@
-import { Hono } from 'hono'
+import { Hono } from "hono";
+import { logger } from "hono/logger";
+import { expensesRoutes } from "./routes/expenses";
 
-const app = new Hono()
+const app = new Hono();
 
-app.get('/', (c) => {
-  return c.text('Hello Hono!')
-})
+// logger
+app.use("/*", logger());
 
-export default app
+// expensesRoutes handle all '/api/expenses' routes
+app.route("/api/expenses", expensesRoutes);
+
+export default app;
