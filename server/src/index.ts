@@ -8,10 +8,11 @@ const app = new Hono();
 app.use("/*", logger());
 
 // expensesRoutes handle all '/api/expenses' routes
-app.route("/api/expenses", expensesRoutes);
+const appRoutes = app.basePath("/api").route("/expenses", expensesRoutes);
 
 // make front-end handle all  routes do not found
 app.use("*", serveStatic({ root: "./front-end/dist" }));
 app.get("*", serveStatic({ path: "./front-end/dist/index.html" }));
 
+export type apiRoutesType = typeof appRoutes;
 export default app;
