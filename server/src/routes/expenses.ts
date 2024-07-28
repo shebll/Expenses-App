@@ -8,7 +8,7 @@ const expenseSchema = z.object({
   title: z.string().min(3).max(20),
   tag: z.object({
     tagName: z.string().min(3).max(20),
-    emoji: z.string().min(1).max(1),
+    emoji: z.string(),
   }),
 });
 
@@ -44,7 +44,11 @@ export const expensesRoutes = new Hono()
   })
   //Get total amount expenses
   .get("/total-expenses", (c) => {
-    return c.json({ totalExpenses: expenses.length });
+    const totalExpenses = expenses.reduce(
+      (sum, expense) => sum + expense.amount,
+      0
+    );
+    return c.json({ totalExpenses });
   })
   //Add new expenses
   .post(
