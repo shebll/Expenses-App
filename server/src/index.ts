@@ -9,6 +9,7 @@ app.use("/*", logger());
 
 // expensesRoutes handle all '/api/expenses' routes
 const appRoutes = app.basePath("/api").route("/expenses", expensesRoutes);
+appRoutes.basePath("/api").route("/tags", expensesRoutes);
 
 // make front-end handle all  routes do not found
 app.use("*", serveStatic({ root: "./front-end/dist" }));

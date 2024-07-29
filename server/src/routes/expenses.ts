@@ -16,10 +16,30 @@ const createSchema = expenseSchema.omit({ id: true });
 type Expense = z.infer<typeof expenseSchema>;
 
 let expenses: Expense[] = [
-  // { title: "home", amount: 11, tag: { tagName: "rent", emoji: "#" }, id: 1 },
-  // { title: "home", amount: 11, tag: { tagName: "rent", emoji: "#" }, id: 21 },
-  // { title: "home", amount: 11, tag: { tagName: "rent", emoji: "#" }, id: 31 },
-  // { title: "home", amount: 11, tag: { tagName: "rent", emoji: "#" }, id: 11 },
+  {
+    title: "goes to rent",
+    amount: 121,
+    tag: { tagName: "rent", emoji: "💸" },
+    id: 1722188242366,
+  },
+  {
+    title: "home",
+    amount: 10,
+    tag: { tagName: "Gas", emoji: "💸" },
+    id: 1722188242366,
+  },
+  {
+    title: "home",
+    amount: 90,
+    tag: { tagName: "Food", emoji: "💸" },
+    id: 1722188242366,
+  },
+  {
+    title: "home",
+    amount: 39,
+    tag: { tagName: "Fun", emoji: "💸" },
+    id: 1722188242366,
+  },
 ];
 
 export const expensesRoutes = new Hono()
