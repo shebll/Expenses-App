@@ -1,19 +1,37 @@
 import { Link } from "@tanstack/react-router";
+import { Button } from "../ui/button";
+import { PlusCircle } from "lucide-react";
+import { useCreateExpense } from "@/hooks/CreateExpense";
 
 const NavBar = () => {
+  const setOpenModel = useCreateExpense((state) => state.setOpenModel);
   return (
     <>
-      <div className="flex justify-between gap-2 p-2">
-        <Link to="/" className="[&.active]:font-bold">
+      <div className="flex items-center justify-around gap-6 p-2">
+        <Link
+          to="/"
+          className="[&.active]:font-bold [&.active]:opacity-100 opacity-50 text-xl"
+        >
           Home
-        </Link>{" "}
-        <Link to="/create-expenses" className="[&.active]:font-bold">
-          create-expenses
         </Link>
-        <Link to="/logs" className="[&.active]:font-bold">
+        <Button
+          onClick={() => setOpenModel()}
+          variant={"default"}
+          className="w-16 h-16 rounded-full "
+        >
+          <PlusCircle size={40} />
+        </Button>
+
+        {/* <Link
+          to="/logs"
+          className="[&.active]:font-bold [&.active]:opacity-100 opacity-50 text-xl"
+          >
           Change logs
-        </Link>
-        <Link to="/analytics" className="[&.active]:font-bold">
+          </Link> */}
+        <Link
+          to="/analytics"
+          className="[&.active]:font-bold [&.active]:opacity-100 opacity-50 text-xl"
+        >
           analytics
         </Link>
       </div>

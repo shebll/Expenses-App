@@ -13,7 +13,6 @@ import { createFileRoute } from '@tanstack/react-router'
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as CreateExpensesImport } from './routes/create-expenses'
 import { Route as AnalyticsImport } from './routes/analytics'
 
 // Create Virtual Routes
@@ -27,11 +26,6 @@ const LogsLazyRoute = LogsLazyImport.update({
   path: '/logs',
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/logs.lazy').then((d) => d.Route))
-
-const CreateExpensesRoute = CreateExpensesImport.update({
-  path: '/create-expenses',
-  getParentRoute: () => rootRoute,
-} as any)
 
 const AnalyticsRoute = AnalyticsImport.update({
   path: '/analytics',
@@ -61,13 +55,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AnalyticsImport
       parentRoute: typeof rootRoute
     }
-    '/create-expenses': {
-      id: '/create-expenses'
-      path: '/create-expenses'
-      fullPath: '/create-expenses'
-      preLoaderRoute: typeof CreateExpensesImport
-      parentRoute: typeof rootRoute
-    }
     '/logs': {
       id: '/logs'
       path: '/logs'
@@ -83,7 +70,6 @@ declare module '@tanstack/react-router' {
 export const routeTree = rootRoute.addChildren({
   IndexLazyRoute,
   AnalyticsRoute,
-  CreateExpensesRoute,
   LogsLazyRoute,
 })
 
@@ -97,7 +83,6 @@ export const routeTree = rootRoute.addChildren({
       "children": [
         "/",
         "/analytics",
-        "/create-expenses",
         "/logs"
       ]
     },
@@ -106,9 +91,6 @@ export const routeTree = rootRoute.addChildren({
     },
     "/analytics": {
       "filePath": "analytics.tsx"
-    },
-    "/create-expenses": {
-      "filePath": "create-expenses.tsx"
     },
     "/logs": {
       "filePath": "logs.lazy.tsx"
