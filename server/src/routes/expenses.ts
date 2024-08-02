@@ -2,110 +2,92 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 import { getUser } from "../kinde";
+import { db } from "../../db/index";
+import { expense as expenseTable } from "../../db/schema/expenseSchema";
+import { eq, and, desc, sum } from "drizzle-orm";
 
 const expenseSchema = z.object({
-  id: z.number().int().positive().min(1),
-  amount: z.number().positive().min(0.1),
-  tag: z.object({
-    tagName: z.string().min(3).max(20),
-    emoji: z.string(),
-  }),
+  amount: z.string(),
+  tagId: z.number().int().positive(),
 });
 
-const createSchema = expenseSchema.omit({ id: true });
+const createSchema = expenseSchema;
 type Expense = z.infer<typeof expenseSchema>;
 
-let expenses: Expense[] = [
-  {
-    amount: 121,
-    tag: { tagName: "rent", emoji: "💸" },
-    id: 1722188242366,
-  },
-  {
-    amount: 10,
-    tag: { tagName: "Gas", emoji: "💸" },
-    id: 1722188242366,
-  },
-  {
-    amount: 90,
-    tag: { tagName: "Food", emoji: "💸" },
-    id: 1722188242366,
-  },
-  {
-    amount: 39,
-    tag: { tagName: "Fun", emoji: "💸" },
-    id: 1722188242366,
-  },
-  {
-    amount: 39,
-    tag: { tagName: "Fun", emoji: "💸" },
-    id: 1723188242366,
-  },
-  {
-    amount: 39,
-    tag: { tagName: "Fun", emoji: "💸" },
-    id: 1723188242366,
-  },
-  {
-    amount: 39,
-    tag: { tagName: "Fun", emoji: "💸" },
-    id: 1723188242366,
-  },
-  {
-    amount: 39,
-    tag: { tagName: "Fun", emoji: "💸" },
-    id: 1723188242366,
-  },
-];
-
-export const expensesRoutes = new Hono()
-  //Get all expenses
-  .get("/", getUser, (c) => {
+export const expensesRoutes = new Hono() // Get total amount expenses
+  .get("/total-expenses", getUser, async (c) => {
     const user = c.var.user;
-    return c.json({ expenses });
+    const totalExpenses = await db
+      .select({ totalExpenses: sum(expenseTable.amount) })
+      .from(expenseTable)
+      .where(eq(expenseTable.userId, user.id))
+      .limit(1)
+      .then((r) => r[0]);
+
+    return c.json(totalExpenses);
   })
-  //Get by id
-  .get("/:id{[0-9]+}", getUser, (c) => {
+  // Get all expenses
+  .get("/", getUser, async (c) => {
+    const user = c.var.user;
+    console.log("User:", user);
+
+    try {
+      const expenses = await db
+        .select()
+        .from(expenseTable)
+        .where(eq(expenseTable.userId, user.id))
+        .orderBy(desc(expenseTable.createdAt))
+        .limit(100);
+
+      console.log("Expenses:", expenses);
+
+      return c.json({ expenses });
+    } catch (error) {
+      console.error("Error fetching expenses:", error);
+      return c.json({ error: "Error fetching expenses" }, 500);
+    }
+  })
+  // Get by id
+  .get("/:id", getUser, async (c) => {
     const user = c.var.user;
     const id = Number(c.req.param("id"));
-    const expense = expenses.find((expense) => expense.id === id);
+    const expense = await db
+      .select()
+      .from(expenseTable)
+      .where(and(eq(expenseTable.id, id), eq(expenseTable.userId, user.id)))
+      .limit(1)
+      .then((r) => r[0]);
+
     if (!expense) return c.notFound();
     return c.json({ expense });
   })
-  //Delete by id
-  .delete("/:id{[0-9]+}", getUser, (c) => {
+  // Delete by id
+  .delete("/:id", getUser, async (c) => {
     const user = c.var.user;
     const id = Number(c.req.param("id"));
-    const index = expenses.findIndex((expense) => expense.id === id);
-    if (index === -1) return c.notFound();
-    expenses = expenses.filter((expense) => expense.id !== id);
-    return c.json({ message: "Deleted Successfully" });
+    const deleted = await db
+      .delete(expenseTable)
+      .where(and(eq(expenseTable.id, id), eq(expenseTable.userId, user.id)))
+      .returning()
+      .then((r) => r[0]);
+
+    if (!deleted) return c.notFound();
+    return c.json({ message: "Deleted Successfully", deleted });
   })
-  //Get total amount expenses
-  .get("/total-expenses", getUser, (c) => {
-    const user = c.var.user;
-    const totalExpenses = expenses.reduce(
-      (sum, expense) => sum + expense.amount,
-      0
-    );
-    return c.json({ totalExpenses });
-  })
-  //Add new expenses
+
+  // Add new expenses
   .post(
     "/",
     getUser,
     zValidator("json", createSchema, (result, c) => {
-      // handling Invalid Data
       if (!result.success) {
         c.status(400);
         return c.json({
           message: "Invalid Data",
-          errors: result.error.errors.map((error) => {
-            return {
-              path: `in ${error.path}`,
-              message: error.message,
-            };
-          }),
+          errors: result.error.errors.map((error) => ({
+            path: `in ${error.path}`,
+            message: error.message,
+          })),
         });
       }
     }),
@@ -113,8 +95,18 @@ export const expensesRoutes = new Hono()
       const user = c.var.user;
       const data = c.req.valid("json");
       const expense = createSchema.parse(data);
-      expenses.push({ id: +Date.now(), ...expense });
+      const newExpense = await db
+        .insert(expenseTable)
+        .values({
+          ...expense,
+          userId: user.id,
+        })
+        .returning();
+
       c.status(201);
-      return c.json({ message: "Expense Created Successfully", expense });
+      return c.json({
+        message: "Expense Created Successfully",
+        expense: newExpense[0],
+      });
     }
   );
