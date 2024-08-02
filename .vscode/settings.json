@@ -3,7 +3,8 @@
     "backend",
     "frontend",
     "frontend-toatalexpenses ",
-    "auth"
+    "auth",
+    "DB"
   ],
   "cSpell.words": ["unothraraiz"]
 }
