@@ -1,9 +1,19 @@
 import { hc } from "hono/client";
-import { apiRoutesType } from "@server/index";
+import { ApiRoutes } from "@server/index";
+import { queryOptions } from "@tanstack/react-query";
 
-const client = hc<apiRoutesType>("/", {
-  headers: {
-    Authorization: "Bearer TOKEN",
-  },
-});
+const client = hc<ApiRoutes>("/");
 export const api = client.api;
+
+const getUserData = async () => {
+  const res = await api.me.$get();
+  if (!res.ok) throw new Error("Server Error");
+
+  const data = await res.json();
+  return data;
+};
+export const userQueryOption = queryOptions({
+  queryKey: ["get-user-data"],
+  queryFn: getUserData,
+  staleTime: Infinity,
+});
