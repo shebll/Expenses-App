@@ -1,12 +1,13 @@
-import Expenses from "./components/Expenses";
+// import Expenses from "./components/Expenses";
 import TotalExpenses from "./components/TotalExpenses";
-import CreateExpense from "./components/CreateExpense";
+import CreateExpense from "./components/Create/CreateExpense";
 
 const AppComponent = () => {
   return (
     <section>
       <TotalExpenses />
-      <Expenses /> <CreateExpense />
+      {/* <Expenses /> */}
+      <CreateExpense />
     </section>
   );
 };
