@@ -1,6 +1,6 @@
 {
   "name": "expenses",
-  "version": "0.0.2",
+  "version": "1.1.0",
   "scripts": {
     "dev": "bun run --hot server/src/index.ts",
     "start": "bun run server/src/index.ts",

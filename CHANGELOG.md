@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.1.0](https://github.com/shebll/Expenses-App/compare/v0.0.2...v1.1.0) (2024-08-02)
+
+
+### Features
+
+* **backend:** add patch api & update get expenses to return tag ([a22e888](https://github.com/shebll/Expenses-App/commit/a22e888219214f6c9f84bc2e006dfdffc3f19d1d))
+* **backend:** update authRoutes ([dc91e32](https://github.com/shebll/Expenses-App/commit/dc91e32c49eeab81f76f62f0a57ce948f85e6cdc))
+* **backend:** update expensesRoutes ([c37e3a6](https://github.com/shebll/Expenses-App/commit/c37e3a6046cf693415e55c71cae55d89a847a23e))
+* **backend:** update tagsRoutes ([36601c5](https://github.com/shebll/Expenses-App/commit/36601c57fcc8ec8ef334e84c7f4f9092f9a8afb7))
+* **DB:** make  expense & tag tables ([432bb61](https://github.com/shebll/Expenses-App/commit/432bb6138ad481c83b23bb198bc342a672d15be9))
+* **frontend:** add create expense page ([edccff8](https://github.com/shebll/Expenses-App/commit/edccff8684e42159c95bdf1548b61815adb59c36))
+* **frontend:** add TagAddForm component ([773df73](https://github.com/shebll/Expenses-App/commit/773df73fc815d192b118a33cfe37c895e715c192))
+* **frontend:** add TagEditForm component ([ef3f80d](https://github.com/shebll/Expenses-App/commit/ef3f80d06663ba7959fefaeb5f70460a015c1b31))
+* **frontend:** add TagsSelection component ([8d7a160](https://github.com/shebll/Expenses-App/commit/8d7a160aabfcc385a9461e36a294b56329c99226))
+* **frontend:** add ui components ([f8a8b48](https://github.com/shebll/Expenses-App/commit/f8a8b48a1695f1e50798c67420d1ba9fae1accc2))
+* **frontend:** fetch UserData and cache it ([7b68d95](https://github.com/shebll/Expenses-App/commit/7b68d95e5c58a844fa910e898555e9d1bd843a4e))
+* **frontend:** protect auth routes ([0354f01](https://github.com/shebll/Expenses-App/commit/0354f01bb4332b8dbe6a6271be8cbcfa3498b024))
+* **frontend:** restructured the app components ([096f4ec](https://github.com/shebll/Expenses-App/commit/096f4ecce3e23ec02669521ce54fb17dd8faf444))
+* **frontend:** update the CreateExpense component ([2dc837a](https://github.com/shebll/Expenses-App/commit/2dc837ab172782409262e94cc8032ae682decb92))
+* **frontend:** update the Expenses components ([66a7afe](https://github.com/shebll/Expenses-App/commit/66a7afec43f32e5260f0827f280ebe8142940f7e))
+
 ### 0.0.2 (2024-08-02)
 
 
