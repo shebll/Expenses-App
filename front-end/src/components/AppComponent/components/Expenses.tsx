@@ -1,56 +1,122 @@
-import { useQuery } from "@tanstack/react-query";
-import ExpenseItem from "./ExpenseItem";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
 import { api } from "@/lib/api";
+import ExpenseItem from "./ExpenseItem";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Expense } from "@/types/Expense";
 
-const getTotal = async () => {
-  // await new Promise((resolve) => setTimeout(resolve, 5000));
+const getExpenses = async () => {
   const res = await api.expenses.$get();
   if (!res.ok) throw new Error("Server Error");
-  const data = await res.json();
-  return data;
+  return res.json();
 };
 
-const Expenses = () => {
+const Expenses = ({
+  onEditExpense,
+}: {
+  onEditExpense: (expense: Expense) => void;
+}) => {
+  const queryClient = useQueryClient();
+
   const { error, isPending, data } = useQuery({
     queryKey: ["expenses"],
-    queryFn: getTotal,
+    queryFn: getExpenses,
   });
 
-  if (error) return "An error occurred: " + error.message;
+  const deleteExpenseMutation = useMutation({
+    mutationFn: (id: number) =>
+      api.expenses[":id"].$delete({ param: { id: String(id) } }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["expenses"] });
+      queryClient.invalidateQueries({ queryKey: ["total-expenses"] });
+    },
+  });
 
-  if (isPending) return <div>Loading...</div>;
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>{error.message}</AlertDescription>
+      </Alert>
+    );
+  }
 
-  const groupedExpenses = data.expenses.reduce((acc, expense) => {
-    const date = new Date(expense.id).toDateString();
-    if (!acc[date]) {
-      acc[date] = [];
+  if (isPending)
+    return (
+      <>
+        <div className="flex flex-col w-full gap-4">
+          <div className="flex justify-between">
+            <span className="inline-block w-32 h-6 rounded-md bg-secondary animate-pulse"></span>
+            <span className="inline-block w-24 h-6 rounded-md bg-secondary animate-pulse"></span>
+          </div>
+          <hr />
+          {[0, 1, 2, 3].map(() => (
+            <div className="flex justify-between">
+              <div className="flex items-center gap-4">
+                <span className="inline-block w-12 h-12 rounded-md bg-secondary animate-pulse"></span>
+                <div className="flex flex-col gap-2">
+                  <span className="inline-block w-24 h-4 rounded-md bg-secondary animate-pulse"></span>
+                  <span className="inline-block h-3 rounded-md w-28 bg-secondary animate-pulse"></span>
+                </div>
+              </div>
+              <span className="inline-block w-24 h-4 rounded-md bg-secondary animate-pulse"></span>
+            </div>
+          ))}
+        </div>
+      </>
+    );
+
+  const groupedExpenses =
+    data &&
+    data.expenses.reduce(
+      (acc, expense) => {
+        const date = format(new Date(expense.createdAt!), "MMMM d, yyyy");
+        if (!acc[date]) {
+          acc[date] = [];
+        }
+        acc[date].push(expense);
+        return acc;
+      },
+      {} as { [date: string]: Expense[] }
+    );
+
+  const handleEdit = (expense: Expense) => {
+    onEditExpense(expense);
+  };
+
+  const handleDelete = (id: number) => {
+    if (window.confirm("Are you sure you want to delete this expense?")) {
+      deleteExpenseMutation.mutate(id);
     }
-    acc[date].push(expense);
-    return acc;
-  }, {});
+  };
 
   const renderExpenses = () => {
-    return Object.keys(groupedExpenses).map((date) => {
-      const expenses = groupedExpenses[date];
-      const total = expenses.reduce((sum, expense) => sum + expense.amount, 0);
-
+    return Object.entries(groupedExpenses || {}).map(([date, expenses]) => {
+      const total = expenses.reduce(
+        (sum, expense) => sum + Number(expense.amount),
+        0
+      );
+      const isToday = date === format(new Date(), "MMMM d, yyyy");
       return (
         <div
           key={date}
           className="flex flex-col gap-1 h-[50vh] overflow-y-auto"
         >
           <div className="flex justify-between">
-            <div className="text-lg font-bold ">
-              {date === new Date().toDateString() ? "Today" : date}
-            </div>
+            <div className="text-lg font-bold ">{isToday ? "Today" : date}</div>
             <div className="text-lg font-bold text-gray-800 dark:text-gray-200">
               ${total.toFixed(2)}
             </div>
           </div>
           <hr />
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-8 py-4">
             {expenses.map((expense) => (
-              <ExpenseItem key={expense.id} expense={expense} />
+              <ExpenseItem
+                key={expense.id}
+                expense={expense}
+                onEdit={() => handleEdit(expense)}
+                onDelete={() => handleDelete(expense.id)}
+              />
             ))}
           </div>
           <hr />
