@@ -1,97 +1,115 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
+import { db } from "../../db/index";
+import { eq, and } from "drizzle-orm";
+import { tag as tagTable } from "../../db/schema/expenseSchema";
+import { getUser } from "../kinde";
 
 const tagSchema = z.object({
-  id: z.number().int().positive().min(1),
   tagName: z.string().min(3).max(20),
-  emoji: z.string(),
+  tagEmoji: z.string(),
 });
 
-const createTagSchema = tagSchema.omit({ id: true });
+const createTagSchema = tagSchema;
 type Tag = z.infer<typeof tagSchema>;
-
-let tags: Tag[] = [
-  { id: 1, tagName: "rent", emoji: "🏠" },
-  { id: 2, tagName: "health", emoji: "💊" },
-  { id: 3, tagName: "food", emoji: "🍕" },
-  { id: 4, tagName: "clothes", emoji: "👚" },
-  { id: 5, tagName: "gift", emoji: "🎁" },
-  { id: 6, tagName: "education", emoji: "📚" },
-  { id: 7, tagName: "vacation", emoji: "🏖️" },
-  { id: 8, tagName: "groceries", emoji: "🥦" },
-];
 
 export const tagsRoutes = new Hono()
   // Get all tags
-  .get("/", (c) => {
+  .get("/", getUser, async (c) => {
+    const user = c.var.user;
+    const tags = await db
+      .select()
+      .from(tagTable)
+      .where(eq(tagTable.userId, user.id));
     return c.json({ tags });
   })
   // Get tag by id
-  .get("/:id{[0-9]+}", (c) => {
+  .get("/:id", getUser, async (c) => {
+    const user = c.var.user;
     const id = Number(c.req.param("id"));
-    const tag = tags.find((tag) => tag.id === id);
+    const tag = await db
+      .select()
+      .from(tagTable)
+      .where(and(eq(tagTable.id, id), eq(tagTable.userId, user.id)))
+      .limit(1)
+      .then((r) => r[0]);
+
     if (!tag) return c.notFound();
     return c.json({ tag });
   })
   // Delete tag by id
-  .delete("/:id{[0-9]+}", (c) => {
+  .delete("/:id", getUser, async (c) => {
+    const user = c.var.user;
     const id = Number(c.req.param("id"));
-    const index = tags.findIndex((tag) => tag.id === id);
-    if (index === -1) return c.notFound();
-    tags = tags.filter((tag) => tag.id !== id);
-    return c.json({ message: "Deleted Successfully" });
+    const deleted = await db
+      .delete(tagTable)
+      .where(and(eq(tagTable.id, id), eq(tagTable.userId, user.id)))
+      .returning()
+      .then((r) => r[0]);
+
+    if (!deleted) return c.notFound();
+    return c.json({ message: "Deleted Successfully", deleted });
   })
   // Add new tag
   .post(
     "/",
+    getUser,
     zValidator("json", createTagSchema, (result, c) => {
-      // Handling Invalid Data
       if (!result.success) {
         c.status(400);
         return c.json({
           message: "Invalid Data",
-          errors: result.error.errors.map((error) => {
-            return {
-              path: `in ${error.path}`,
-              message: error.message,
-            };
-          }),
+          errors: result.error.errors.map((error) => ({
+            path: `in ${error.path}`,
+            message: error.message,
+          })),
         });
       }
     }),
     async (c) => {
+      const user = c.var.user;
       const data = c.req.valid("json");
       const tag = createTagSchema.parse(data);
-      tags.push({ id: +Date.now(), ...tag });
+      const newTag = await db
+        .insert(tagTable)
+        .values({ ...tag, userId: user.id })
+        .returning();
+
       c.status(201);
-      return c.json({ message: "Tag Created Successfully", tag });
+      return c.json({ message: "Tag Created Successfully", tag: newTag[0] });
     }
   )
   // Update existing tag
   .put(
-    "/:id{[0-9]+}",
+    "/:id",
+    getUser,
     zValidator("json", createTagSchema, (result, c) => {
-      // Handling Invalid Data
       if (!result.success) {
         c.status(400);
         return c.json({
           message: "Invalid Data",
-          errors: result.error.errors.map((error) => {
-            return {
-              path: `in ${error.path}`,
-              message: error.message,
-            };
-          }),
+          errors: result.error.errors.map((error) => ({
+            path: `in ${error.path}`,
+            message: error.message,
+          })),
         });
       }
     }),
     async (c) => {
+      const user = c.var.user;
       const id = Number(c.req.param("id"));
       const data = c.req.valid("json");
-      const index = tags.findIndex((tag) => tag.id === id);
-      if (index === -1) return c.notFound();
-      tags[index] = { id, ...data };
-      return c.json({ message: "Tag Updated Successfully", tag: tags[index] });
+      const updatedTag = await db
+        .update(tagTable)
+        .set({ ...data, userId: user.id })
+        .where(and(eq(tagTable.id, id), eq(tagTable.userId, user.id)))
+        .returning();
+
+      if (updatedTag.length === 0) return c.notFound();
+      return c.json({
+        message: "Tag Updated Successfully",
+        tag: updatedTag[0],
+      });
     }
   );
