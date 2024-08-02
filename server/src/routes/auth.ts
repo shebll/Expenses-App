@@ -1,7 +1,5 @@
 import { Hono } from "hono";
-
-import { kindeClient, sessionManager } from "../kinde";
-import { getUser } from "../kinde";
+import { getUser, kindeClient, sessionManager } from "../kinde";
 
 export const authRoutes = new Hono()
   .get("/login", async (c) => {
@@ -13,7 +11,11 @@ export const authRoutes = new Hono()
     return c.redirect(registerUrl.toString());
   })
   .get("/callback", async (c) => {
-    // get called eveyr time we login or register
+    const url = new URL(c.req.url);
+    await kindeClient.handleRedirectToApp(sessionManager(c), url);
+    return c.redirect("/");
+  })
+  .get("/callback", async (c) => {
     const url = new URL(c.req.url);
     await kindeClient.handleRedirectToApp(sessionManager(c), url);
     return c.redirect("/");
