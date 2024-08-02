@@ -1,11 +1,12 @@
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useCreateExpense } from "@/hooks/CreateExpense";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import TagsSelection from "../Tag/TagsSelection";
+import { Expense } from "@/types/Expense";
+import { useEffect } from "react";
 
 const expenseSchema = z.object({
   amount: z
@@ -19,12 +20,16 @@ const expenseSchema = z.object({
     .transform((val) => parseInt(val, 10)),
 });
 
-type ExpenseFormValues = z.infer<typeof expenseSchema>;
+export type ExpenseFormValues = z.infer<typeof expenseSchema>;
 
-const CreateExpense = () => {
-  const { openModel, setOpenModel } = useCreateExpense((state) => state);
+interface CreateExpenseProps {
+  expense?: Expense | null;
+  onClose: () => void;
+  openModel: boolean;
+}
+
+const CreateExpense = ({ expense, onClose, openModel }: CreateExpenseProps) => {
   const queryClient = useQueryClient();
-  // const currentDateTime = format(new Date(), "MMMM d, yyyy HH:mm");
 
   const {
     register,
@@ -35,27 +40,42 @@ const CreateExpense = () => {
   } = useForm<ExpenseFormValues>({
     resolver: zodResolver(expenseSchema),
   });
-  const onSubmit: SubmitHandler<ExpenseFormValues> = (data) => {
-    createExpenseMutation.mutate(data);
-  };
+
+  useEffect(() => {
+    if (expense) {
+      reset({ amount: expense.amount, tagId: expense.tagId });
+    } else {
+      reset({ amount: "", tagId: 0 });
+    }
+  }, [expense, reset]);
 
   const selectedTagId = watch("tagId");
 
-  const createExpenseMutation = useMutation({
-    mutationFn: (data: ExpenseFormValues) =>
-      api.expenses.$post({
-        json: {
-          amount: data.amount.toString(),
-          tagId: data.tagId,
-        },
-      }),
+  const expenseMutation = useMutation({
+    mutationFn: async (data: ExpenseFormValues) => {
+      if (expense) {
+        return await api.expenses[":id"].$patch({
+          json: {
+            tagId: data.tagId,
+            amount: data.amount,
+          },
+          param: { id: String(expense.id) },
+        });
+      } else {
+        return await api.expenses.$post({ json: data });
+      }
+    },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["expenses"] });
       queryClient.invalidateQueries({ queryKey: ["total-expenses"] });
-      setOpenModel();
       reset();
+      onClose();
     },
   });
 
+  const onSubmit: SubmitHandler<ExpenseFormValues> = (data) => {
+    expenseMutation.mutate(data);
+  };
   return (
     <section
       className={`absolute ${
@@ -66,11 +86,10 @@ const CreateExpense = () => {
         className={`flex flex-col items-center justify-center w-full gap-6 transition-all duration-700 ease-in-out relative left-0`}
         onSubmit={handleSubmit(onSubmit)}
       >
-        {/* <h1 className="text-sm text-center text-gray-400">{currentDateTime}</h1> */}
         <div className="flex flex-col gap-2">
-          <h1 className="text-sm text-center text-gray-400">
-            Enter The Amount
-          </h1>
+          <h2 className="mb-4 text-2xl font-bold">
+            {expense ? "Edit Expense" : "Create Expense"}
+          </h2>
           <input
             {...register("amount", { valueAsNumber: true })}
             placeholder="0"
@@ -95,7 +114,7 @@ const CreateExpense = () => {
           <Button
             className="w-[30%]"
             variant={"ghost"}
-            onClick={() => setOpenModel()}
+            onClick={() => onClose()}
             type="button"
           >
             Cancel
@@ -104,9 +123,13 @@ const CreateExpense = () => {
             className="w-[70%]"
             variant={"default"}
             type="submit"
-            disabled={createExpenseMutation.isPending}
+            disabled={expenseMutation.isPending}
           >
-            {createExpenseMutation.isPending ? "Submitting..." : "Confirm"}
+            {expenseMutation.isPending
+              ? "Submitting..."
+              : expense
+                ? "Update"
+                : "Create"}
           </Button>
         </div>
       </form>
@@ -114,4 +137,53 @@ const CreateExpense = () => {
   );
 };
 
+{
+  /* <form
+className={`flex flex-col items-center justify-center w-full gap-6 transition-all duration-700 ease-in-out relative left-0`}
+onSubmit={handleSubmit(onSubmit)}
+>
+<div className="flex flex-col gap-2">
+        <h2 className="mb-4 text-2xl font-bold">
+          {expense ? "Edit Expense" : "Create Expense"}
+        </h2>
+  <input
+    {...register("amount", { valueAsNumber: true })}
+    placeholder="0"
+    type="number"
+    min="0"
+    step="0.01"
+    className="text-5xl font-bold text-center bg-transparent border-b outline-none border-zinc-200 w-52"
+  />
+  {errors.amount && (
+    <p className="text-sm text-red-500">{errors.amount.message}</p>
+  )}
+</div>
+<div className="flex flex-col gap-2">
+  <h1 className="text-sm text-center text-gray-400">Select The Tag</h1>
+  <TagsSelection
+    register={register}
+    error={errors.tagId}
+    value={selectedTagId}
+  />
+</div>
+<div className="flex w-full gap-2">
+  <Button
+    className="w-[30%]"
+    variant={"ghost"}
+    onClick={() => setOpenModel()}
+    type="button"
+  >
+    Cancel
+  </Button>
+  <Button
+    className="w-[70%]"
+    variant={"default"}
+    type="submit"
+    disabled={createExpenseMutation.isPending}
+  >
+    {createExpenseMutation.isPending ? "Submitting..." : "Confirm"}
+  </Button>
+</div>
+</form> */
+}
 export default CreateExpense;
