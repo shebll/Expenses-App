@@ -1,0 +1,21 @@
+name = "extracker"
+main = "./server/src/index.ts"
+compatibility_date = "2023-08-23"
+
+workers_dev = true
+
+node_compat = true
+
+[vars]
+KINDE_DOMAIN = 'https://trackexpense.kinde.com'
+KINDE_REDIRECT_URI = 'https://extracker.shebblloll.workers.dev/api/callback'
+KINDE_LOGOUT_REDIRECT_URI = 'https://extracker.shebblloll.workers.dev'
+
+[site]
+bucket = "./front-end/dist"
+
+# Do not include sensitive information here
+# Use `wrangler secret put` for sensitive data
+# KINDE_CLIENT_ID
+# KINDE_CLIENT_SECRET
+# DRIZZLE_DATABASE_URL
