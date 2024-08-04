@@ -3,28 +3,49 @@ import { getUser, kindeClient, sessionManager } from "../kinde";
 
 export const authRoutes = new Hono()
   .get("/login", async (c) => {
-    const loginUrl = await kindeClient.login(sessionManager(c));
-    return c.redirect(loginUrl.toString());
+    try {
+      const loginUrl = await kindeClient.login(sessionManager(c));
+      console.log("////////////////", loginUrl);
+      return c.redirect(loginUrl.toString());
+    } catch (e) {
+      console.error("Login Error:", e);
+      return c.json({ error: "Internal Server Error" }, 500);
+    }
   })
   .get("/register", async (c) => {
-    const registerUrl = await kindeClient.register(sessionManager(c));
-    return c.redirect(registerUrl.toString());
+    try {
+      const registerUrl = await kindeClient.register(sessionManager(c));
+      return c.redirect(String(registerUrl));
+    } catch (e) {
+      console.error("Register Error:", e);
+      return c.json({ error: "Internal Server Error" }, 500);
+    }
   })
   .get("/callback", async (c) => {
-    const url = new URL(c.req.url);
-    await kindeClient.handleRedirectToApp(sessionManager(c), url);
-    return c.redirect("/");
-  })
-  .get("/callback", async (c) => {
-    const url = new URL(c.req.url);
-    await kindeClient.handleRedirectToApp(sessionManager(c), url);
-    return c.redirect("/");
+    try {
+      const url = new URL(c.req.url);
+      await kindeClient.handleRedirectToApp(sessionManager(c), url);
+      return c.redirect("/");
+    } catch (e) {
+      console.error("Callback Error:", e);
+      return c.json({ error: "Internal Server Error" }, 500);
+    }
   })
   .get("/logout", async (c) => {
-    const logoutUrl = await kindeClient.logout(sessionManager(c));
-    return c.redirect(logoutUrl.toString());
+    try {
+      const logoutUrl = await kindeClient.logout(sessionManager(c));
+      return c.redirect(logoutUrl.toString());
+    } catch (e) {
+      console.error("Logout Error:", e);
+      return c.json({ error: "Internal Server Error" }, 500);
+    }
   })
   .get("/me", getUser, async (c) => {
-    const user = c.var.user;
-    return c.json({ user });
+    try {
+      const user = c.var.user;
+      return c.json({ user });
+    } catch (e) {
+      console.error("User Info Error:", e);
+      return c.json({ error: "Internal Server Error" }, 500);
+    }
   });
