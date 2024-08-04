@@ -50,8 +50,8 @@ const Expenses = ({
             <span className="inline-block w-24 h-6 rounded-md bg-secondary animate-pulse"></span>
           </div>
           <hr />
-          {[0, 1, 2, 3].map(() => (
-            <div className="flex justify-between">
+          {[0, 1, 2, 3].map((_, index) => (
+            <div className="flex justify-between" key={index}>
               <div className="flex items-center gap-4">
                 <span className="inline-block w-12 h-12 rounded-md bg-secondary animate-pulse"></span>
                 <div className="flex flex-col gap-2">
@@ -98,10 +98,7 @@ const Expenses = ({
       );
       const isToday = date === format(new Date(), "MMMM d, yyyy");
       return (
-        <div
-          key={date}
-          className="flex flex-col gap-1 h-[50vh] overflow-y-auto"
-        >
+        <div key={date} className="flex flex-col gap-1 ">
           <div className="flex justify-between">
             <div className="text-lg font-bold ">{isToday ? "Today" : date}</div>
             <div className="text-lg font-bold text-gray-800 dark:text-gray-200">
@@ -119,13 +116,16 @@ const Expenses = ({
               />
             ))}
           </div>
-          <hr />
         </div>
       );
     });
   };
 
-  return <section className="">{renderExpenses()}</section>;
+  return (
+    <section className="h-[50vh] overflow-y-auto flex flex-col gap-6 ">
+      {renderExpenses()}
+    </section>
+  );
 };
 
 export default Expenses;
