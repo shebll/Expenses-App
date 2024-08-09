@@ -4,7 +4,8 @@
     "frontend",
     "frontend-toatalexpenses ",
     "auth",
-    "DB"
+    "DB",
+    "deploy"
   ],
   "cSpell.words": ["unothraraiz"]
 }

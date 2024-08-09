@@ -8,11 +8,14 @@ node_compat = true
 
 [vars]
 KINDE_DOMAIN = 'https://trackexpense.kinde.com'
-KINDE_REDIRECT_URI = 'https://extracker.shebblloll.workers.dev/api/callback'
-KINDE_LOGOUT_REDIRECT_URI = 'https://extracker.shebblloll.workers.dev'
+KINDE_REDIRECT_URI = 'https://extracker.shebl.workers.dev/api/callback'
+KINDE_LOGOUT_REDIRECT_URI = 'https://extracker.shebl.workers.dev'
 
 [site]
 bucket = "./front-end/dist"
+
+[build]
+command = "npm run build && node generate-manifest.js"
 
 # Do not include sensitive information here
 # Use `wrangler secret put` for sensitive data
