@@ -2,12 +2,13 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 import { getUser } from "../kinde";
-import { db } from "../../db/index";
 import { expense as expenseTable } from "../../db/schema/expenseSchema";
 import { tag as tagTable } from "../../db/schema/expenseSchema";
 import { eq, and, desc, sum } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { Client } from "pg";
 
-const expenseSchema = z.object({
+const createSchema = z.object({
   amount: z.string(),
   tagId: z.number().int().positive(),
 });
@@ -17,12 +18,16 @@ const updateSchema = z.object({
   tagId: z.number().int().positive().optional(),
 });
 
-const createSchema = expenseSchema;
-type Expense = z.infer<typeof expenseSchema>;
+type Expense = z.infer<typeof createSchema>;
 
-export const expensesRoutes = new Hono() // Get total amount expenses
+export const expensesRoutes = new Hono()
   .get("/total-expenses", getUser, async (c) => {
     const user = c.var.user;
+    const client = new Client({
+      connectionString: process.env.DRIZZLE_DATABASE_URL, // Use process.env for environment variables
+    });
+    client.connect();
+    const db = drizzle(client);
     const totalExpenses = await db
       .select({ totalExpenses: sum(expenseTable.amount) })
       .from(expenseTable)
@@ -36,6 +41,11 @@ export const expensesRoutes = new Hono() // Get total amount expenses
   .get("/", getUser, async (c) => {
     const user = c.var.user;
     console.log("User:", user);
+    const client = new Client({
+      connectionString: process.env.DRIZZLE_DATABASE_URL, // Use process.env for environment variables
+    });
+    client.connect();
+    const db = drizzle(client);
     try {
       const expenses = await db
         .select({
@@ -68,6 +78,11 @@ export const expensesRoutes = new Hono() // Get total amount expenses
   .get("/:id", getUser, async (c) => {
     const user = c.var.user;
     const id = Number(c.req.param("id"));
+    const client = new Client({
+      connectionString: process.env.DRIZZLE_DATABASE_URL, // Use process.env for environment variables
+    });
+    client.connect();
+    const db = drizzle(client);
     const expense = await db
       .select()
       .from(expenseTable)
@@ -82,6 +97,11 @@ export const expensesRoutes = new Hono() // Get total amount expenses
   .delete("/:id", getUser, async (c) => {
     const user = c.var.user;
     const id = Number(c.req.param("id"));
+    const client = new Client({
+      connectionString: process.env.DRIZZLE_DATABASE_URL, // Use process.env for environment variables
+    });
+    client.connect();
+    const db = drizzle(client);
     const deleted = await db
       .delete(expenseTable)
       .where(and(eq(expenseTable.id, id), eq(expenseTable.userId, user.id)))
@@ -108,9 +128,15 @@ export const expensesRoutes = new Hono() // Get total amount expenses
       }
     }),
     async (c) => {
+      const client = new Client({
+        connectionString: process.env.DRIZZLE_DATABASE_URL, // Use process.env for environment variables
+      });
+      client.connect();
+      const db = drizzle(client);
       const user = c.var.user;
       const data = c.req.valid("json");
       const expense = createSchema.parse(data);
+
       const newExpense = await db
         .insert(expenseTable)
         .values({
@@ -142,6 +168,11 @@ export const expensesRoutes = new Hono() // Get total amount expenses
       }
     }),
     async (c) => {
+      const client = new Client({
+        connectionString: process.env.DRIZZLE_DATABASE_URL, // Use process.env for environment variables
+      });
+      client.connect();
+      const db = drizzle(client);
       const user = c.var.user;
       const id = Number(c.req.param("id"));
       const data = c.req.valid("json");
@@ -202,14 +233,6 @@ export const expensesRoutes = new Hono() // Get total amount expenses
         });
       } catch (error) {
         console.error("Error updating expense:", error);
-        if (
-          error.message === "Expense not found or does not belong to the user"
-        ) {
-          c.status(404);
-          return c.json({
-            error: "Expense not found or does not belong to the user",
-          });
-        }
         c.status(500);
         return c.json({ error: "Error updating expense" });
       }

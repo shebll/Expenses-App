@@ -3,9 +3,12 @@ import { serveStatic } from "hono/bun";
 import { logger } from "hono/logger";
 import { expensesRoutes } from "./routes/expenses";
 import { tagsRoutes } from "./routes/tags";
-import { authRoutes } from "./routes/auth";
-import analyticsRoutes from "./routes/analyticsRoutes";
-const app = new Hono();
+// import analyticsRoutes from "./routes/analyticsRoutes";
+import { Env } from "./types/type";
+import { createAuthRoutes } from "./routes/auth";
+// import manifestJSON from "../../src/assets-manifest.json";
+
+const app = new Hono<Env>();
 
 // logger
 app.use("/*", logger());
@@ -15,12 +18,24 @@ const apiRoutes = app
   .basePath("/api")
   .route("/expenses", expensesRoutes)
   .route("/tags", tagsRoutes)
-  .route("/analytics", analyticsRoutes)
-  .route("/", authRoutes);
+  .route("/", createAuthRoutes());
+// .route("/analytics", analyticsRoutes)
 
 // make front-end handle all  routes do not found
-app.use("/*", serveStatic({ root: "./front-end/dist" }));
-app.get("/", serveStatic({ path: "./front-end/dist/index.html" }));
+app.get(
+  "/assets/*",
+  serveStatic({
+    root: "./front-end/dist",
+    // manifest: manifestJSON,
+  })
+);
+app.get(
+  "/*",
+  serveStatic({
+    root: "./front-end/dist",
+    // manifest: manifestJSON,
+  })
+);
 
 export default app;
 export type ApiRoutes = typeof apiRoutes;
