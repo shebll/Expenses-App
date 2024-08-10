@@ -15,8 +15,10 @@ import { TagType } from "../../../../../../sharedType";
 
 type TagsSelectionProps = {
   register: UseFormRegister<{
-    amount: string;
     tagId: number;
+    amount: string;
+    date?: string | null | undefined;
+    id?: number | undefined;
   }>;
   error: FieldError | undefined;
   value: number | undefined;

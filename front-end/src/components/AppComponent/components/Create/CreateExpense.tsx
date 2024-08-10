@@ -1,12 +1,13 @@
-import { useForm, SubmitHandler } from "react-hook-form";
+import { useForm, SubmitHandler, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import TagsSelection from "../Tag/TagsSelection";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { CreateExpenseSchema, ExpenseType } from "../../../../../../sharedType";
+import { Calendar } from "@/components/ui/calendar";
 
 export type ExpenseFormValues = z.infer<typeof CreateExpenseSchema>;
 
@@ -17,6 +18,8 @@ interface CreateExpenseProps {
 }
 
 const CreateExpense = ({ expense, onClose, openModel }: CreateExpenseProps) => {
+  const [showCalendar, setShowCalendar] = useState(false);
+
   const queryClient = useQueryClient();
 
   const {
@@ -25,19 +28,27 @@ const CreateExpense = ({ expense, onClose, openModel }: CreateExpenseProps) => {
     formState: { errors },
     reset,
     watch,
+    control,
   } = useForm<ExpenseFormValues>({
     resolver: zodResolver(CreateExpenseSchema),
   });
 
   useEffect(() => {
     if (expense) {
-      reset({ amount: expense.amount, tagId: expense.tagId });
+      reset({
+        amount: expense.amount,
+        tagId: expense.tagId,
+        date: expense.date,
+      });
     } else {
-      reset({ amount: "", tagId: 0 });
+      reset({ amount: "", tagId: 0, date: new Date().toISOString() });
     }
   }, [expense, reset]);
 
   const selectedTagId = watch("tagId");
+  const date = watch("date");
+
+  console.log(date);
 
   const expenseMutation = useMutation({
     mutationFn: async (data: ExpenseFormValues) => {
@@ -46,6 +57,7 @@ const CreateExpense = ({ expense, onClose, openModel }: CreateExpenseProps) => {
           json: {
             tagId: data.tagId,
             amount: data.amount,
+            date: data.date,
           },
           param: { id: String(expense.id) },
         });
@@ -98,6 +110,30 @@ const CreateExpense = ({ expense, onClose, openModel }: CreateExpenseProps) => {
             error={errors.tagId}
             value={selectedTagId}
           />
+        </div>
+        <div className="flex flex-col gap-2">
+          <p
+            className="text-sm text-center text-gray-400"
+            onClick={() => setShowCalendar(true)}
+          >
+            Select specific date !
+          </p>
+          {showCalendar && (
+            <Controller
+              control={control}
+              name="date"
+              render={({ field }) => (
+                <Calendar
+                  mode="single"
+                  selected={new Date(field.value!)}
+                  onSelect={(selectedDate) => {
+                    field.onChange((selectedDate ?? new Date()).toISOString());
+                  }}
+                  className="border rounded-md"
+                />
+              )}
+            />
+          )}
         </div>
         <div className="flex w-full gap-2">
           <Button

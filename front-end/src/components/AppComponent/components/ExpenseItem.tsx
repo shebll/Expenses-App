@@ -1,16 +1,16 @@
-import { Expense } from "@/types/Expense";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2 } from "lucide-react";
+import { ExpenseWithTagsType } from "../../../../../sharedType";
 
 interface ExpenseItemProps {
-  expense: Expense;
+  expense: ExpenseWithTagsType;
   onEdit: () => void;
   onDelete: () => void;
 }
 
 const ExpenseItem = ({ expense, onEdit, onDelete }: ExpenseItemProps) => {
-  const date = new Date(expense.createdAt!);
+  const timeDate = new Date(String(expense.createdAt));
 
   return (
     <div className="flex items-center justify-between ">
@@ -21,7 +21,7 @@ const ExpenseItem = ({ expense, onEdit, onDelete }: ExpenseItemProps) => {
             {expense.tag?.tagName}
           </div>
           <div className="text-sm text-gray-500 dark:text-gray-400">
-            {format(date, "HH:mm")}
+            {format(timeDate, "HH:mm")} / {expense.date}
           </div>
         </div>
       </div>
