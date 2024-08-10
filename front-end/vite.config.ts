@@ -16,7 +16,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "http://localhost:3000",
+        target: "https://extracker.shebl.workers.dev",
         changeOrigin: true,
       },
     },

@@ -1,8 +1,8 @@
 name = "extracker"
-main = "./server/src/index.ts"
 compatibility_date = "2023-08-23"
 
 workers_dev = true
+type = "webpack"
 
 node_compat = true
 
@@ -11,8 +11,11 @@ KINDE_DOMAIN = 'https://trackexpense.kinde.com'
 KINDE_REDIRECT_URI = 'https://extracker.shebl.workers.dev/api/callback'
 KINDE_LOGOUT_REDIRECT_URI = 'https://extracker.shebl.workers.dev'
 
+
+
 [site]
 bucket = "./front-end/dist"
+entry-point = "workers-site"
 
 [build]
 command = "npm run build && node generate-manifest.js"

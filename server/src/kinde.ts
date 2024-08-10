@@ -10,11 +10,11 @@ import { Env } from "./types/type";
 
 export function createKindeClient(c: Context<Env>) {
   return createKindeServerClient(GrantType.AUTHORIZATION_CODE, {
-    authDomain: process.env.KINDE_DOMAIN!,
-    clientId: process.env.KINDE_CLIENT_ID!,
-    clientSecret: process.env.KINDE_CLIENT_SECRET!,
-    redirectURL: process.env.KINDE_REDIRECT_URI!,
-    logoutRedirectURL: process.env.KINDE_LOGOUT_REDIRECT_URI!,
+    authDomain: c.env.KINDE_DOMAIN!,
+    clientId: c.env.KINDE_CLIENT_ID!,
+    clientSecret: c.env.KINDE_CLIENT_SECRET!,
+    redirectURL: c.env.KINDE_REDIRECT_URI!,
+    logoutRedirectURL: c.env.KINDE_LOGOUT_REDIRECT_URI!,
   });
 }
 
@@ -79,11 +79,11 @@ export const getUser = createMiddleware<Env>(async (c, next) => {
 // export const kindeClient = createKindeServerClient(
 //   GrantType.AUTHORIZATION_CODE,
 //   {
-//     authDomain: process.env.KINDE_DOMAIN!,
-//     clientId: process.env.KINDE_CLIENT_ID!,
-//     clientSecret: process.env.KINDE_CLIENT_SECRET!,
-//     redirectURL: process.env.KINDE_REDIRECT_URI!,
-//     logoutRedirectURL: process.env.KINDE_LOGOUT_REDIRECT_URI!,
+//     authDomain: c.env.KINDE_DOMAIN!,
+//     clientId: c.env.KINDE_CLIENT_ID!,
+//     clientSecret: c.env.KINDE_CLIENT_SECRET!,
+//     redirectURL: c.env.KINDE_REDIRECT_URI!,
+//     logoutRedirectURL: c.env.KINDE_LOGOUT_REDIRECT_URI!,
 //   }
 // );
 
@@ -138,10 +138,10 @@ export const getUser = createMiddleware<Env>(async (c, next) => {
 
 // export function createKindeClient(c: Context<Env>) {
 //   return createKindeServerClient(GrantType.AUTHORIZATION_CODE, {
-//     authDomain: process.env.KINDE_DOMAIN!,
-//     clientId: process.env.KINDE_CLIENT_ID!,
-//     clientSecret: process.env.KINDE_CLIENT_SECRET!,
-//     redirectURL: process.env.KINDE_REDIRECT_URI!,
-//     logoutRedirectURL: process.env.KINDE_LOGOUT_REDIRECT_URI!,
+//     authDomain: c.env.KINDE_DOMAIN!,
+//     clientId: c.env.KINDE_CLIENT_ID!,
+//     clientSecret: c.env.KINDE_CLIENT_SECRET!,
+//     redirectURL: c.env.KINDE_REDIRECT_URI!,
+//     logoutRedirectURL: c.env.KINDE_LOGOUT_REDIRECT_URI!,
 //   });
 // }

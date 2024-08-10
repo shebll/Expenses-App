@@ -3,5 +3,5 @@ import { migrate } from "drizzle-orm/postgres-js/migrator";
 import postgres from "postgres";
 
 // for migrations
-const migrationClient = postgres(process.env.DRIZZLE_DATABASE_URL!, { max: 1 });
+const migrationClient = postgres(c.env.DRIZZLE_DATABASE_URL!, { max: 1 });
 migrate(drizzle(migrationClient), { migrationsFolder: "./drizzle" });

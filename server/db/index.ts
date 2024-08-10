@@ -6,7 +6,7 @@ import { Env } from "../src/types/type";
 // Function to create a new database client
 export function createDbClient(c: Context<Env>) {
   const client = new Client({
-    connectionString: process.env.DRIZZLE_DATABASE_URL, // Use process.env for environment variables
+    connectionString: c.env.DRIZZLE_DATABASE_URL, // Use c.env for environment variables
   });
   return client;
 }

@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { serveStatic } from "hono/bun";
+import { serveStatic } from "hono/cloudflare-workers";
 import { logger } from "hono/logger";
 import { expensesRoutes } from "./routes/expenses";
 import { tagsRoutes } from "./routes/tags";
@@ -7,7 +7,7 @@ import { tagsRoutes } from "./routes/tags";
 import { Env } from "./types/type";
 import { createAuthRoutes } from "./routes/auth";
 import { dbMiddleware } from "../db";
-// import manifestJSON from "../../src/assets-manifest.json";
+import manifestJSON from "../../src/assets-manifest.json";
 
 const app = new Hono<Env>();
 
@@ -31,16 +31,24 @@ app.get(
   "/assets/*",
   serveStatic({
     root: "./front-end/dist",
-    // manifest: manifestJSON,
+    manifest: manifestJSON,
   })
 );
 app.get(
   "/*",
   serveStatic({
     root: "./front-end/dist",
-    // manifest: manifestJSON,
+    manifest: manifestJSON,
   })
 );
 
+app.get(
+  "/static/*",
+  serveStatic({ root: "./front-end/dist", manifest: manifestJSON })
+);
+app.get(
+  "/favicon.ico",
+  serveStatic({ path: "./front-end/dist/vite.svg", manifest: manifestJSON })
+);
 export default app;
 export type ApiRoutes = typeof apiRoutes;
