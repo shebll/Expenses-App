@@ -31,6 +31,7 @@ export const expensesRoutes = new Hono()
           id: expenseTable.id,
           amount: expenseTable.amount,
           createdAt: expenseTable.createdAt,
+          date: expenseTable.date,
           userId: expenseTable.userId,
           tagId: expenseTable.tagId,
           tag: {
