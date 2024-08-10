@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import { api, getTagsQueryOption } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -24,13 +24,6 @@ type TagsSelectionProps = {
   value: number | undefined;
 };
 
-const getTags = async (): Promise<TagType[]> => {
-  const res = await api.tags.$get();
-  if (!res.ok) throw new Error("Failed to fetch tags");
-  const data = await res.json();
-  return data.tags;
-};
-
 const TagsSelection: React.FC<TagsSelectionProps> = ({
   register,
   error,
@@ -39,10 +32,7 @@ const TagsSelection: React.FC<TagsSelectionProps> = ({
   const [isAddingTag, setIsAddingTag] = useState(false);
   const queryClient = useQueryClient();
 
-  const { data: tags, isLoading } = useQuery({
-    queryKey: ["tags"],
-    queryFn: getTags,
-  });
+  const { data: tags, isLoading } = useQuery(getTagsQueryOption);
 
   const updateTagMutation = useMutation({
     mutationFn: (updatedTag: TagType) =>

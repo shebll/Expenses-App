@@ -56,8 +56,6 @@ const CreateExpense = ({ expense, onClose, openModel }: CreateExpenseProps) => {
         return await api.expenses[":id"].$patch({
           json: {
             tagId: data.tagId,
-            amount: data.amount,
-            date: data.date,
           },
           param: { id: String(expense.id) },
         });

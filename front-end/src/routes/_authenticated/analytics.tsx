@@ -1,6 +1,7 @@
-import Analytics from "@/components/Analytics/Analytics";
+// import Analytics from "@/components/Analytics/Analytics";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/analytics")({
-  component: Analytics,
+  component: () => <p>Coming soon</p>,
+  // component: Analytics,
 });

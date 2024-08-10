@@ -1,15 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { api } from "@/lib/api";
+import { api, expensesQueryOption } from "@/lib/api";
 import ExpenseItem from "./ExpenseItem";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ExpenseType, ExpenseWithTagsType } from "../../../../../sharedType";
-
-const getExpenses = async () => {
-  const res = await api.expenses.$get();
-  if (!res.ok) throw new Error("Server Error");
-  return res.json();
-};
 
 const Expenses = ({
   onEditExpense,
@@ -17,11 +11,7 @@ const Expenses = ({
   onEditExpense: (expense: ExpenseType) => void;
 }) => {
   const queryClient = useQueryClient();
-
-  const { error, isPending, data } = useQuery({
-    queryKey: ["expenses"],
-    queryFn: getExpenses,
-  });
+  const { error, isPending, data } = useQuery(expensesQueryOption);
 
   const deleteExpenseMutation = useMutation({
     mutationFn: (id: number) =>

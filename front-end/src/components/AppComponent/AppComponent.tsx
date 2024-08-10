@@ -3,19 +3,21 @@ import { useState } from "react";
 import Expenses from "./components/Expenses";
 import TotalExpenses from "./components/TotalExpenses";
 import CreateExpense from "./components/Create/CreateExpense";
-import { Expense } from "@/types/Expense";
 import { useCreateExpense } from "@/hooks/CreateExpense";
+import { ExpenseType } from "../../../../sharedType";
 
 const AppComponent = () => {
   const { openModel, setOpenModel } = useCreateExpense((state) => state);
-  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const [editingExpense, setEditingExpense] = useState<ExpenseType | null>(
+    null
+  );
 
   const handleCloseCreateModal = () => {
     setOpenModel();
     setEditingExpense(null);
   };
 
-  const handleEditExpense = (expense: Expense) => {
+  const handleEditExpense = (expense: ExpenseType) => {
     setEditingExpense(expense);
     setOpenModel();
   };

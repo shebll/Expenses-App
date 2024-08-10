@@ -1,19 +1,9 @@
-import { api } from "@/lib/api";
+import { totalExpensesQueryOption } from "@/lib/api";
 
 import { useQuery } from "@tanstack/react-query";
 
-const getTotal = async () => {
-  const res = await api.expenses["total-expenses"].$get();
-  if (!res.ok) throw new Error("Server Error");
-  const data = await res.json();
-
-  return data;
-};
 function TotalExpenses() {
-  const { error, isPending, data } = useQuery({
-    queryKey: ["total-expenses"],
-    queryFn: getTotal,
-  });
+  const { error, isPending, data } = useQuery(totalExpensesQueryOption);
 
   if (error) return "an error according " + error.message;
   return (
