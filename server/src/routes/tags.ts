@@ -1,23 +1,15 @@
 import { Hono } from "hono";
-import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
-import { db } from "../../db/index";
 import { eq, and } from "drizzle-orm";
 import { tag as tagTable } from "../../db/schema/expenseSchema";
 import { getUser } from "../kinde";
-
-const tagSchema = z.object({
-  tagName: z.string().min(3).max(20),
-  tagEmoji: z.string(),
-});
-
-const createTagSchema = tagSchema;
-type Tag = z.infer<typeof tagSchema>;
-
+import { CreateTagSchema } from "../../../sharedType";
 export const tagsRoutes = new Hono()
   // Get all tags
   .get("/", getUser, async (c) => {
     const user = c.var.user;
+    const db = c.var.db;
+
     const tags = await db
       .select()
       .from(tagTable)
@@ -26,8 +18,11 @@ export const tagsRoutes = new Hono()
   })
   // Get tag by id
   .get("/:id", getUser, async (c) => {
-    const user = c.var.user;
     const id = Number(c.req.param("id"));
+
+    const db = c.var.db;
+    const user = c.var.user;
+
     const tag = await db
       .select()
       .from(tagTable)
@@ -40,8 +35,11 @@ export const tagsRoutes = new Hono()
   })
   // Delete tag by id
   .delete("/:id", getUser, async (c) => {
-    const user = c.var.user;
     const id = Number(c.req.param("id"));
+
+    const db = c.var.db;
+    const user = c.var.user;
+
     const deleted = await db
       .delete(tagTable)
       .where(and(eq(tagTable.id, id), eq(tagTable.userId, user.id)))
@@ -55,7 +53,7 @@ export const tagsRoutes = new Hono()
   .post(
     "/",
     getUser,
-    zValidator("json", createTagSchema, (result, c) => {
+    zValidator("json", CreateTagSchema, (result, c) => {
       if (!result.success) {
         c.status(400);
         return c.json({
@@ -68,9 +66,12 @@ export const tagsRoutes = new Hono()
       }
     }),
     async (c) => {
-      const user = c.var.user;
       const data = c.req.valid("json");
-      const tag = createTagSchema.parse(data);
+
+      const db = c.var.db;
+      const user = c.var.user;
+
+      const tag = CreateTagSchema.parse(data);
       const newTag = await db
         .insert(tagTable)
         .values({ ...tag, userId: user.id })
@@ -84,7 +85,7 @@ export const tagsRoutes = new Hono()
   .put(
     "/:id",
     getUser,
-    zValidator("json", createTagSchema, (result, c) => {
+    zValidator("json", CreateTagSchema, (result, c) => {
       if (!result.success) {
         c.status(400);
         return c.json({
@@ -97,7 +98,9 @@ export const tagsRoutes = new Hono()
       }
     }),
     async (c) => {
+      const db = c.var.db;
       const user = c.var.user;
+
       const id = Number(c.req.param("id"));
       const data = c.req.valid("json");
       const updatedTag = await db

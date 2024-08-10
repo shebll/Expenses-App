@@ -32,5 +32,4 @@ export const dbMiddleware = async (
   c.set("db", db);
   c.set("dbClient", client);
   await next();
-  await client.end();
 };

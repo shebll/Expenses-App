@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { api } from "@/lib/api";
 import ExpenseItem from "./ExpenseItem";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Expense } from "@/types/Expense";
+import { ExpenseType, ExpenseWithTagsType } from "../../../../../sharedType";
 
 const getExpenses = async () => {
   const res = await api.expenses.$get();
@@ -14,7 +14,7 @@ const getExpenses = async () => {
 const Expenses = ({
   onEditExpense,
 }: {
-  onEditExpense: (expense: Expense) => void;
+  onEditExpense: (expense: ExpenseType) => void;
 }) => {
   const queryClient = useQueryClient();
 
@@ -77,10 +77,10 @@ const Expenses = ({
         acc[date].push(expense);
         return acc;
       },
-      {} as { [date: string]: Expense[] }
+      {} as { [date: string]: ExpenseWithTagsType[] }
     );
 
-  const handleEdit = (expense: Expense) => {
+  const handleEdit = (expense: ExpenseType) => {
     onEditExpense(expense);
   };
 
@@ -122,7 +122,7 @@ const Expenses = ({
   };
 
   return (
-    <section className="h-[50vh] overflow-y-auto flex flex-col gap-6 ">
+    <section className="h-[50vh] overflow-y-auto flex flex-col gap-6 scrollbar-thin">
       {renderExpenses()}
     </section>
   );

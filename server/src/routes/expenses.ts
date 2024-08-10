@@ -1,33 +1,16 @@
 import { Hono } from "hono";
-import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 import { getUser } from "../kinde";
 import { expense as expenseTable } from "../../db/schema/expenseSchema";
 import { tag as tagTable } from "../../db/schema/expenseSchema";
 import { eq, and, desc, sum } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/node-postgres";
-import { Client } from "pg";
-
-const createSchema = z.object({
-  amount: z.string(),
-  tagId: z.number().int().positive(),
-});
-
-const updateSchema = z.object({
-  amount: z.string().optional(),
-  tagId: z.number().int().positive().optional(),
-});
-
-type Expense = z.infer<typeof createSchema>;
+import { CreateExpenseSchema, UpdateExpenseSchema } from "../../../sharedType";
 
 export const expensesRoutes = new Hono()
   .get("/total-expenses", getUser, async (c) => {
     const user = c.var.user;
-    const client = new Client({
-      connectionString: process.env.DRIZZLE_DATABASE_URL, // Use process.env for environment variables
-    });
-    client.connect();
-    const db = drizzle(client);
+    const db = c.var.db;
+
     const totalExpenses = await db
       .select({ totalExpenses: sum(expenseTable.amount) })
       .from(expenseTable)
@@ -40,12 +23,8 @@ export const expensesRoutes = new Hono()
   // Get all expenses
   .get("/", getUser, async (c) => {
     const user = c.var.user;
-    console.log("User:", user);
-    const client = new Client({
-      connectionString: process.env.DRIZZLE_DATABASE_URL, // Use process.env for environment variables
-    });
-    client.connect();
-    const db = drizzle(client);
+    const db = c.var.db;
+
     try {
       const expenses = await db
         .select({
@@ -76,13 +55,11 @@ export const expensesRoutes = new Hono()
   })
   // Get by id
   .get("/:id", getUser, async (c) => {
-    const user = c.var.user;
     const id = Number(c.req.param("id"));
-    const client = new Client({
-      connectionString: process.env.DRIZZLE_DATABASE_URL, // Use process.env for environment variables
-    });
-    client.connect();
-    const db = drizzle(client);
+
+    const user = c.var.user;
+    const db = c.var.db;
+
     const expense = await db
       .select()
       .from(expenseTable)
@@ -95,13 +72,11 @@ export const expensesRoutes = new Hono()
   })
   // Delete by id
   .delete("/:id", getUser, async (c) => {
-    const user = c.var.user;
     const id = Number(c.req.param("id"));
-    const client = new Client({
-      connectionString: process.env.DRIZZLE_DATABASE_URL, // Use process.env for environment variables
-    });
-    client.connect();
-    const db = drizzle(client);
+
+    const user = c.var.user;
+    const db = c.var.db;
+
     const deleted = await db
       .delete(expenseTable)
       .where(and(eq(expenseTable.id, id), eq(expenseTable.userId, user.id)))
@@ -115,7 +90,7 @@ export const expensesRoutes = new Hono()
   .post(
     "/",
     getUser,
-    zValidator("json", createSchema, (result, c) => {
+    zValidator("json", CreateExpenseSchema, (result, c) => {
       if (!result.success) {
         c.status(400);
         return c.json({
@@ -128,14 +103,11 @@ export const expensesRoutes = new Hono()
       }
     }),
     async (c) => {
-      const client = new Client({
-        connectionString: process.env.DRIZZLE_DATABASE_URL, // Use process.env for environment variables
-      });
-      client.connect();
-      const db = drizzle(client);
       const user = c.var.user;
+      const db = c.var.db;
+
       const data = c.req.valid("json");
-      const expense = createSchema.parse(data);
+      const expense = CreateExpenseSchema.parse(data);
 
       const newExpense = await db
         .insert(expenseTable)
@@ -155,7 +127,7 @@ export const expensesRoutes = new Hono()
   .patch(
     "/:id",
     getUser,
-    zValidator("json", updateSchema, (result, c) => {
+    zValidator("json", UpdateExpenseSchema, (result, c) => {
       if (!result.success) {
         c.status(400);
         return c.json({
@@ -168,15 +140,12 @@ export const expensesRoutes = new Hono()
       }
     }),
     async (c) => {
-      const client = new Client({
-        connectionString: process.env.DRIZZLE_DATABASE_URL, // Use process.env for environment variables
-      });
-      client.connect();
-      const db = drizzle(client);
       const user = c.var.user;
+      const db = c.var.db;
+
       const id = Number(c.req.param("id"));
       const data = c.req.valid("json");
-      const updateData = updateSchema.parse(data);
+      const updateData = UpdateExpenseSchema.parse(data);
 
       try {
         const updatedExpense = await db.transaction(async (tx) => {

@@ -5,25 +5,13 @@ import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import TagsSelection from "../Tag/TagsSelection";
-import { Expense } from "@/types/Expense";
 import { useEffect } from "react";
+import { CreateExpenseSchema, ExpenseType } from "../../../../../../sharedType";
 
-const expenseSchema = z.object({
-  amount: z
-    .number()
-    .positive()
-    .min(0.1)
-    .transform((val) => val.toString()),
-  tagId: z
-    .string()
-    .min(1, "Please select a tag")
-    .transform((val) => parseInt(val, 10)),
-});
-
-export type ExpenseFormValues = z.infer<typeof expenseSchema>;
+export type ExpenseFormValues = z.infer<typeof CreateExpenseSchema>;
 
 interface CreateExpenseProps {
-  expense?: Expense | null;
+  expense?: ExpenseType | null;
   onClose: () => void;
   openModel: boolean;
 }
@@ -38,7 +26,7 @@ const CreateExpense = ({ expense, onClose, openModel }: CreateExpenseProps) => {
     reset,
     watch,
   } = useForm<ExpenseFormValues>({
-    resolver: zodResolver(expenseSchema),
+    resolver: zodResolver(CreateExpenseSchema),
   });
 
   useEffect(() => {
@@ -65,11 +53,13 @@ const CreateExpense = ({ expense, onClose, openModel }: CreateExpenseProps) => {
         return await api.expenses.$post({ json: data });
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["expenses"] });
-      queryClient.invalidateQueries({ queryKey: ["total-expenses"] });
-      reset();
-      onClose();
+    onSuccess: (data) => {
+      if (data.ok) {
+        queryClient.invalidateQueries({ queryKey: ["expenses"] });
+        queryClient.invalidateQueries({ queryKey: ["total-expenses"] });
+        reset();
+        onClose();
+      }
     },
   });
 
@@ -91,11 +81,10 @@ const CreateExpense = ({ expense, onClose, openModel }: CreateExpenseProps) => {
             {expense ? "Edit Expense" : "Create Expense"}
           </h2>
           <input
-            {...register("amount", { valueAsNumber: true })}
+            {...register("amount", { valueAsNumber: false })}
             placeholder="0"
             type="number"
-            min="0"
-            step="0.01"
+            step="0.001"
             className="text-5xl font-bold text-center bg-transparent border-b outline-none border-zinc-200 w-52"
           />
           {errors.amount && (

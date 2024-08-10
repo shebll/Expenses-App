@@ -11,22 +11,18 @@ import { FieldError, UseFormRegister } from "react-hook-form";
 import { Edit2 } from "lucide-react";
 import { TagAddForm } from "./TagAddForm";
 import { TagEditForm } from "./TagEditForm";
-
-export type Tag = {
-  id: number;
-  tagName: string;
-  tagEmoji: string;
-  userId: string;
-  createdAt: string | null;
-};
+import { TagType } from "../../../../../../sharedType";
 
 type TagsSelectionProps = {
-  register: UseFormRegister<{ amount: string; tagId: number }>;
+  register: UseFormRegister<{
+    amount: string;
+    tagId: number;
+  }>;
   error: FieldError | undefined;
   value: number | undefined;
 };
 
-const getTags = async (): Promise<Tag[]> => {
+const getTags = async (): Promise<TagType[]> => {
   const res = await api.tags.$get();
   if (!res.ok) throw new Error("Failed to fetch tags");
   const data = await res.json();
@@ -47,7 +43,7 @@ const TagsSelection: React.FC<TagsSelectionProps> = ({
   });
 
   const updateTagMutation = useMutation({
-    mutationFn: (updatedTag: Tag) =>
+    mutationFn: (updatedTag: TagType) =>
       api.tags[":id"].$put({
         json: { tagName: updatedTag.tagName, tagEmoji: updatedTag.tagEmoji },
         param: { id: String(updatedTag.id) },
@@ -65,13 +61,14 @@ const TagsSelection: React.FC<TagsSelectionProps> = ({
 
   if (isLoading) return <div>Loading tags...</div>;
 
+  console.log(value);
   return (
     <div className="grid grid-cols-4 gap-4">
       {tags?.map((tag) => (
         <div
           key={tag.id}
           className={`relative group flex items-center justify-center w-20 h-20 border rounded-lg transition-colors ${
-            value == tag.id
+            Number(value) === tag.id
               ? "border-primary bg-primary/10"
               : "hover:border-primary"
           }`}
@@ -79,7 +76,7 @@ const TagsSelection: React.FC<TagsSelectionProps> = ({
           <input
             type="radio"
             id={String(tag.id)}
-            value={tag.id}
+            value={String(tag.id)}
             className="hidden"
             {...register("tagId")}
           />
