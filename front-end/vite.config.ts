@@ -10,6 +10,7 @@ export default defineConfig({
     alias: {
       "@": path.resolve(import.meta.dir, "./src"),
       "@server": path.resolve(import.meta.dir, "../server/src"),
+      "@app": path.resolve(import.meta.dir, "../"),
     },
   },
   server: {

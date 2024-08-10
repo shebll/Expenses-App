@@ -1,7 +1,7 @@
 import { hc } from "hono/client";
-import { ApiRoutes } from "@server/src/index";
+import { ApiRoutes } from "@server/index";
 import { queryOptions } from "@tanstack/react-query";
-import { TagType } from "../../../sharedType";
+import { TagType } from "@app/sharedType";
 
 const client = hc<ApiRoutes>("/");
 export const api = client.api;
@@ -58,5 +58,4 @@ export const getTags = async (): Promise<TagType[]> => {
 export const getTagsQueryOption = queryOptions({
   queryKey: ["tags"],
   queryFn: getTags,
-  staleTime: 1000 * 60 * 10,
 });

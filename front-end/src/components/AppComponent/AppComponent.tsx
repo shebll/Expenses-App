@@ -4,7 +4,7 @@ import Expenses from "./components/Expenses";
 import TotalExpenses from "./components/TotalExpenses";
 import CreateExpense from "./components/Create/CreateExpense";
 import { useCreateExpense } from "@/hooks/CreateExpense";
-import { ExpenseType } from "../../../../sharedType";
+import { ExpenseType } from "@app/sharedType";
 
 const AppComponent = () => {
   const { openModel, setOpenModel } = useCreateExpense((state) => state);

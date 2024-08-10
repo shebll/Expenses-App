@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { api, expensesQueryOption } from "@/lib/api";
 import ExpenseItem from "./ExpenseItem";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ExpenseType, ExpenseWithTagsType } from "../../../../../sharedType";
+import { ExpenseType, ExpenseWithTagsType } from "@app/sharedType";
 
 const Expenses = ({
   onEditExpense,

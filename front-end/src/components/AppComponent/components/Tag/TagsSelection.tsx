@@ -11,7 +11,7 @@ import { FieldError, UseFormRegister } from "react-hook-form";
 import { Edit2 } from "lucide-react";
 import { TagAddForm } from "./TagAddForm";
 import { TagEditForm } from "./TagEditForm";
-import { TagType } from "../../../../../../sharedType";
+import { TagType } from "@app/sharedType";
 
 type TagsSelectionProps = {
   register: UseFormRegister<{

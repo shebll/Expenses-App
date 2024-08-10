@@ -6,7 +6,7 @@ import { api } from "@/lib/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import TagsSelection from "../Tag/TagsSelection";
 import { useEffect, useState } from "react";
-import { CreateExpenseSchema, ExpenseType } from "../../../../../../sharedType";
+import { CreateExpenseSchema, ExpenseType } from "@app/sharedType";
 import { Calendar } from "@/components/ui/calendar";
 
 export type ExpenseFormValues = z.infer<typeof CreateExpenseSchema>;
