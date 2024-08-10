@@ -1,13 +1,13 @@
+import Avatar from "./components/Avatar";
 import Logo from "./components/Logo";
-import Logout from "./components/Logout";
 import { Theme } from "./components/Theme";
 
 const Header = () => {
   return (
-    <header className="flex justify-between items-center">
+    <header className="flex items-center justify-between">
       <Theme />
       <Logo />
-      <Logout />
+      <Avatar />
     </header>
   );
 };
