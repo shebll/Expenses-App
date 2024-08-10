@@ -1,14 +1,14 @@
 import { userQueryOption } from "@/lib/api";
-import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { createFileRoute, Navigate, Outlet } from "@tanstack/react-router";
 
 // src/routes/_authenticated.tsx
 
-const Login = () => {
-  return <div className="">Login in now</div>;
-};
 const Component = () => {
   const { user } = Route.useRouteContext();
-  if (!user) return <Login />;
+  if (user == null) {
+    console.log(user);
+    Navigate({ to: "/login" });
+  }
   return <Outlet />;
 };
 export const Route = createFileRoute("/_authenticated")({
@@ -18,7 +18,6 @@ export const Route = createFileRoute("/_authenticated")({
       const data = await queryClient.fetchQuery(userQueryOption);
       return data;
     } catch (e) {
-      console.log("e");
       return { user: null };
     }
   },
