@@ -13,21 +13,33 @@ import { createFileRoute } from '@tanstack/react-router'
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as RegisterImport } from './routes/register'
+import { Route as LoginImport } from './routes/login'
+import { Route as LayoutImport } from './routes/_layout'
 import { Route as AuthenticatedImport } from './routes/_authenticated'
-import { Route as AuthenticatedProfileImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedAnalyticsImport } from './routes/_authenticated/analytics'
 
 // Create Virtual Routes
 
-const LogsLazyImport = createFileRoute('/logs')()
 const AuthenticatedIndexLazyImport = createFileRoute('/_authenticated/')()
+const AuthenticatedLogsLazyImport = createFileRoute('/_authenticated/logs')()
 
 // Create/Update Routes
 
-const LogsLazyRoute = LogsLazyImport.update({
-  path: '/logs',
+const RegisterRoute = RegisterImport.update({
+  path: '/register',
   getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/logs.lazy').then((d) => d.Route))
+} as any)
+
+const LoginRoute = LoginImport.update({
+  path: '/login',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const LayoutRoute = LayoutImport.update({
+  id: '/_layout',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const AuthenticatedRoute = AuthenticatedImport.update({
   id: '/_authenticated',
@@ -41,10 +53,12 @@ const AuthenticatedIndexLazyRoute = AuthenticatedIndexLazyImport.update({
   import('./routes/_authenticated/index.lazy').then((d) => d.Route),
 )
 
-const AuthenticatedProfileRoute = AuthenticatedProfileImport.update({
-  path: '/profile',
+const AuthenticatedLogsLazyRoute = AuthenticatedLogsLazyImport.update({
+  path: '/logs',
   getParentRoute: () => AuthenticatedRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/_authenticated/logs.lazy').then((d) => d.Route),
+)
 
 const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsImport.update({
   path: '/analytics',
@@ -62,11 +76,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedImport
       parentRoute: typeof rootRoute
     }
-    '/logs': {
-      id: '/logs'
-      path: '/logs'
-      fullPath: '/logs'
-      preLoaderRoute: typeof LogsLazyImport
+    '/_layout': {
+      id: '/_layout'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof LayoutImport
+      parentRoute: typeof rootRoute
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginImport
+      parentRoute: typeof rootRoute
+    }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterImport
       parentRoute: typeof rootRoute
     }
     '/_authenticated/analytics': {
@@ -76,11 +104,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAnalyticsImport
       parentRoute: typeof AuthenticatedImport
     }
-    '/_authenticated/profile': {
-      id: '/_authenticated/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof AuthenticatedProfileImport
+    '/_authenticated/logs': {
+      id: '/_authenticated/logs'
+      path: '/logs'
+      fullPath: '/logs'
+      preLoaderRoute: typeof AuthenticatedLogsLazyImport
       parentRoute: typeof AuthenticatedImport
     }
     '/_authenticated/': {
@@ -98,10 +126,11 @@ declare module '@tanstack/react-router' {
 export const routeTree = rootRoute.addChildren({
   AuthenticatedRoute: AuthenticatedRoute.addChildren({
     AuthenticatedAnalyticsRoute,
-    AuthenticatedProfileRoute,
+    AuthenticatedLogsLazyRoute,
     AuthenticatedIndexLazyRoute,
   }),
-  LogsLazyRoute,
+  LoginRoute,
+  RegisterRoute,
 })
 
 /* prettier-ignore-end */
@@ -113,26 +142,34 @@ export const routeTree = rootRoute.addChildren({
       "filePath": "__root.tsx",
       "children": [
         "/_authenticated",
-        "/logs"
+        "/_layout",
+        "/login",
+        "/register"
       ]
     },
     "/_authenticated": {
       "filePath": "_authenticated.tsx",
       "children": [
         "/_authenticated/analytics",
-        "/_authenticated/profile",
+        "/_authenticated/logs",
         "/_authenticated/"
       ]
     },
-    "/logs": {
-      "filePath": "logs.lazy.tsx"
+    "/_layout": {
+      "filePath": "_layout.tsx"
+    },
+    "/login": {
+      "filePath": "login.tsx"
+    },
+    "/register": {
+      "filePath": "register.tsx"
     },
     "/_authenticated/analytics": {
       "filePath": "_authenticated/analytics.tsx",
       "parent": "/_authenticated"
     },
-    "/_authenticated/profile": {
-      "filePath": "_authenticated/profile.tsx",
+    "/_authenticated/logs": {
+      "filePath": "_authenticated/logs.lazy.tsx",
       "parent": "/_authenticated"
     },
     "/_authenticated/": {
